@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 
-export default function Login() {
+export default function Register() {
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
-    const [form, setForm] = useState({ email: "", password: "" });
+    const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -15,8 +15,16 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
-        if (!form.email || !form.password) {
+        if (!form.name || !form.email || !form.password || !form.confirm) {
             setError("Please fill in all fields.");
+            return;
+        }
+        if (form.password.length < 6) {
+            setError("Password must be at least 6 characters.");
+            return;
+        }
+        if (form.password !== form.confirm) {
+            setError("Passwords do not match.");
             return;
         }
         setLoading(true);
@@ -26,10 +34,19 @@ export default function Login() {
         }, 1000);
     };
 
+    const strength = (() => {
+        const p = form.password;
+        if (!p) return null;
+        if (p.length < 6) return { label: "Too short", color: "#e05c5c", width: "25%" };
+        if (p.length < 8 || !/[0-9]/.test(p)) return { label: "Weak", color: "#e08c3c", width: "50%" };
+        if (!/[^a-zA-Z0-9]/.test(p)) return { label: "Medium", color: "#d4b84f", width: "75%" };
+        return { label: "Strong", color: "#5caa6f", width: "100%" };
+    })();
+
     return (
         <>
             <style>{`
-        .login-wrapper {
+        .register-wrapper {
           min-height: 100vh;
           min-height: 100dvh;
           background: var(--bg-primary);
@@ -40,7 +57,7 @@ export default function Login() {
           position: relative;
         }
 
-        .login-card {
+        .register-card {
           width: 100%;
           max-width: 420px;
           padding: 2.5rem;
@@ -92,45 +109,62 @@ export default function Login() {
           color: var(--text-primary);
         }
 
-        .forgot-link {
+        .strength-bar-track {
+          width: 100%;
+          height: 3px;
+          background: var(--border);
+          border-radius: 999px;
+          margin-top: 0.5rem;
+          overflow: hidden;
+        }
+
+        .strength-bar-fill {
+          height: 100%;
+          border-radius: 999px;
+          transition: width 0.3s ease, background 0.3s ease;
+        }
+
+        .login-link {
+          color: var(--accent);
+          text-decoration: none;
+        }
+
+        .login-link:hover {
+          text-decoration: underline;
+        }
+
+        .terms-text {
           font-size: 0.72rem;
-          color: var(--accent);
-          text-decoration: none;
-          white-space: nowrap;
+          color: var(--text-muted);
+          text-align: center;
+          margin-top: 1rem;
+          line-height: 1.6;
         }
 
-        .forgot-link:hover {
-          text-decoration: underline;
-        }
-
-        .register-link {
+        .terms-text a {
           color: var(--accent);
           text-decoration: none;
         }
 
-        .register-link:hover {
+        .terms-text a:hover {
           text-decoration: underline;
         }
 
-        /* Tablet: tighten padding slightly */
         @media (max-width: 640px) {
-          .login-card {
+          .register-card {
             padding: 2rem 1.5rem;
           }
-
-          .login-card h1 {
+          .register-card h1 {
             font-size: 1.5rem !important;
           }
         }
 
-        /* Mobile: full bleed, no card shadow */
         @media (max-width: 480px) {
-          .login-wrapper {
+          .register-wrapper {
             padding: 0;
             align-items: flex-start;
           }
-
-          .login-card {
+          .register-card {
             max-width: 100%;
             min-height: 100dvh;
             padding: 1.5rem 1.25rem;
@@ -143,7 +177,6 @@ export default function Login() {
             flex-direction: column;
             justify-content: center;
           }
-
           .theme-toggle {
             top: 1rem;
             right: 1rem;
@@ -152,15 +185,14 @@ export default function Login() {
           }
         }
 
-        /* Very small screens */
         @media (max-width: 360px) {
-          .login-card {
+          .register-card {
             padding: 1.25rem 1rem;
           }
         }
       `}</style>
 
-            <div className="login-wrapper">
+            <div className="register-wrapper">
                 {/* Background glow */}
                 <div
                     style={{
@@ -180,7 +212,7 @@ export default function Login() {
                 </button>
 
                 {/* Card */}
-                <div className="cv-card login-card">
+                <div className="cv-card register-card">
 
                     {/* Logo */}
                     <div className="fade-up fade-up-1" style={{ marginBottom: "2rem" }}>
@@ -231,26 +263,35 @@ export default function Login() {
                                 marginBottom: "0.4rem",
                             }}
                         >
-                            Welcome back
+                            Create your vault
                         </h1>
                         <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                            Sign in to access your vault
+                            Start managing your documents intelligently
                         </p>
                     </div>
 
                     {/* Form */}
                     <form onSubmit={handleSubmit}>
+
+                        {/* Full name */}
+                        <div className="fade-up fade-up-2" style={{ marginBottom: "1rem" }}>
+                            <label style={{ display: "block", fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
+                                Full name
+                            </label>
+                            <input
+                                className="cv-input"
+                                type="text"
+                                name="name"
+                                placeholder="Jane Smith"
+                                value={form.name}
+                                onChange={handleChange}
+                                autoComplete="name"
+                            />
+                        </div>
+
+                        {/* Email */}
                         <div className="fade-up fade-up-3" style={{ marginBottom: "1rem" }}>
-                            <label
-                                style={{
-                                    display: "block",
-                                    fontSize: "0.7rem",
-                                    letterSpacing: "0.1em",
-                                    textTransform: "uppercase",
-                                    color: "var(--text-muted)",
-                                    marginBottom: "0.4rem",
-                                }}
-                            >
+                            <label style={{ display: "block", fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
                                 Email
                             </label>
                             <input
@@ -264,37 +305,68 @@ export default function Login() {
                             />
                         </div>
 
-                        <div className="fade-up fade-up-4" style={{ marginBottom: "1.5rem" }}>
-                            <div
-                                style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    marginBottom: "0.4rem",
-                                    gap: "0.5rem",
-                                }}
-                            >
-                                <label
-                                    style={{
-                                        fontSize: "0.7rem",
-                                        letterSpacing: "0.1em",
-                                        textTransform: "uppercase",
-                                        color: "var(--text-muted)",
-                                    }}
-                                >
-                                    Password
-                                </label>
-                                <a href="#" className="forgot-link">Forgot?</a>
-                            </div>
+                        {/* Password */}
+                        <div className="fade-up fade-up-4" style={{ marginBottom: "1rem" }}>
+                            <label style={{ display: "block", fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
+                                Password
+                            </label>
                             <input
                                 className="cv-input"
                                 type="password"
                                 name="password"
-                                placeholder="••••••••"
+                                placeholder="Min. 6 characters"
                                 value={form.password}
                                 onChange={handleChange}
-                                autoComplete="current-password"
+                                autoComplete="new-password"
                             />
+                            {/* Password strength bar */}
+                            {strength && (
+                                <div>
+                                    <div className="strength-bar-track">
+                                        <div
+                                            className="strength-bar-fill"
+                                            style={{ width: strength.width, background: strength.color }}
+                                        />
+                                    </div>
+                                    <p style={{ fontSize: "0.68rem", color: strength.color, marginTop: "0.3rem" }}>
+                                        {strength.label}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Confirm password */}
+                        <div className="fade-up fade-up-4" style={{ marginBottom: "1.5rem" }}>
+                            <label style={{ display: "block", fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
+                                Confirm password
+                            </label>
+                            <input
+                                className="cv-input"
+                                type="password"
+                                name="confirm"
+                                placeholder="••••••••"
+                                value={form.confirm}
+                                onChange={handleChange}
+                                autoComplete="new-password"
+                                style={{
+                                    borderColor:
+                                        form.confirm && form.password !== form.confirm
+                                            ? "rgba(224,92,92,0.6)"
+                                            : form.confirm && form.password === form.confirm
+                                                ? "rgba(92,170,111,0.6)"
+                                                : undefined,
+                                }}
+                            />
+                            {form.confirm && form.password !== form.confirm && (
+                                <p style={{ fontSize: "0.68rem", color: "#e05c5c", marginTop: "0.3rem" }}>
+                                    Passwords do not match
+                                </p>
+                            )}
+                            {form.confirm && form.password === form.confirm && (
+                                <p style={{ fontSize: "0.68rem", color: "#5caa6f", marginTop: "0.3rem" }}>
+                                    ✓ Passwords match
+                                </p>
+                            )}
                         </div>
 
                         {error && (
@@ -315,13 +387,19 @@ export default function Login() {
 
                         <div className="fade-up fade-up-5">
                             <button className="cv-btn-primary" type="submit" disabled={loading}>
-                                {loading ? "Signing in..." : "Sign in →"}
+                                {loading ? "Creating account..." : "Create account →"}
                             </button>
                         </div>
                     </form>
 
+                    {/* Terms */}
+                    <p className="terms-text">
+                        By creating an account you agree to our{" "}
+                        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </p>
+
                     {/* Divider */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", margin: "1.5rem 0" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", margin: "1.25rem 0" }}>
                         <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
                         <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>or</span>
                         <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
@@ -338,10 +416,10 @@ export default function Login() {
                         Continue with Google
                     </button>
 
-                    {/* Register */}
+                    {/* Login link */}
                     <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
-                        No account?{" "}
-                        <Link to="/register" className="register-link">Create one</Link>
+                        Already have an account?{" "}
+                        <Link to="/login" className="login-link">Sign in</Link>
                     </p>
                 </div>
             </div>

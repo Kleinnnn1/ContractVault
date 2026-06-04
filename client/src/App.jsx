@@ -1,9 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import Login from "./pages/Login";
-
-const Dashboard = () => <div style={{ color: "var(--text-primary)", padding: "2rem" }}>Dashboard — coming soon</div>;
-const Register = () => <div style={{ color: "var(--text-primary)", padding: "2rem" }}>Register — coming soon</div>;
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
