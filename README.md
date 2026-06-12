@@ -107,6 +107,7 @@ ContractVault/
 ## Author
 
 **Kenneth Jhun N. Balino**
+
 Full Stack Developer
 
 Built with React, Firebase, Tailwind CSS, and Google Gemini AI.
